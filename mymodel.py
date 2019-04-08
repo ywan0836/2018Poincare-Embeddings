@@ -125,9 +125,10 @@ class SNEmbedding(Embedding):
     def loss(self, preds, mvalue = 2.0, weight=None):
         #lossfn = self.lossfn(size_average=size_average, weight=weight)
         o = preds.narrow(1, 1, preds.size(1) - 1)
+        # Slice the first row of preds, and expand it to the size of 'o'
         s = preds.narrow(1, 0, 1).expand_as(o)
+        # New objective function
         lossValue = th.clamp(mvalue + s - o, min=0.0)
-        
         return  th.sum(lossValue) #lossfn(preds, targets)
 
 
@@ -180,6 +181,7 @@ class SNGraphDataset(GraphDataset):
         ntries = 0
         nnegs = self.nnegs
         if self.burnin:
+            # Shrink the number of negatives 10 times smaller
             nnegs *= 0.1
         while ntries < self.max_tries and len(negs) < nnegs:
             if self.burnin:

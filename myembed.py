@@ -145,6 +145,7 @@ else:
     raise ValueError(f'Unknown distance function {opt.distfn}')
 
 # initialize model and data
+    # model = SNEmbedding
 model, data, model_name, conf = mymodel.SNGraphDataset.initialize(distfn, opt, idx, objects)
 
 # Build config string for log

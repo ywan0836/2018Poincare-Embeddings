@@ -40,20 +40,29 @@ def train(model, data, optimizer, opt, log, rank=1, mvalue = 2.0, queue=None):
         t_start = timeit.default_timer()
         if epoch < opt.burnin:
             data.burnin = True
+            # Slow down the learning speed by 100 times
             lr = opt.lr * _lr_multiplier
             if rank == 1:
                 log.info(f'Burnin: lr={lr}')
                       
         for inputs, targets in loader:
+            # Time spent so far
             elapsed = timeit.default_timer() - t_start
+            # Reset the gradients otherwise they would be accumulated
             optimizer.zero_grad()
+            # Make the predictions
             preds = model(inputs)
+            # Calculate the loss
             loss = model.loss(preds, mvalue)
+            # Backpropagation
             loss.backward()
+            # Gradient Descent
             optimizer.step(lr=lr)
+            # Record the loss for each epoch
             epoch_loss.append(loss.item())   #(data[0])
         if rank == 1:
             emb = None
+            # Store the model for the final epoch and the evaluation epoch
             if epoch == (opt.epochs - 1) or epoch % opt.eval_each == (opt.eval_each - 1):
                 emb = model
             if queue is not None:
